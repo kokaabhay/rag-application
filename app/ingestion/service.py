@@ -1,10 +1,11 @@
 from pathlib import Path
 import shutil
-
+from app.retrieval.bm25 import create_bm25_index
 from langchain_core.documents import Document
 
 from app.ingestion.loader import load_document
 from app.ingestion.chunker import split_documents
+from app.retrieval.vector import create_vector_store
 
 
 DOCUMENT_DIRECTORY = Path("data/documents")
@@ -26,7 +27,7 @@ def save_uploaded_document(
     Save the uploaded document using the standard
     knowledge-base filename.
 
-    Any previous knowledge-base document is removed first.
+    Any previous knowledge-base document is removed.
     """
 
     source = Path(source_path)
@@ -54,7 +55,7 @@ def save_uploaded_document(
         exist_ok=True,
     )
 
-    # Remove the previous knowledge-base document
+    # Delete previous knowledge-base document
     for old_file in DOCUMENT_DIRECTORY.glob(
         f"{STANDARD_FILENAME}.*"
     ):
@@ -75,11 +76,12 @@ def ingest_document(
     extension: str,
 ) -> list[Document]:
     """
-    Complete document ingestion preprocessing:
+    Complete ingestion pipeline:
 
     1. Save uploaded document
-    2. Load using Unstructured
+    2. Load document
     3. Split into chunks
+    4. Create vector index
     """
 
     saved_path = save_uploaded_document(
@@ -91,4 +93,8 @@ def ingest_document(
 
     chunks = split_documents(documents)
 
+    # Create/update Chroma vector index
+    create_vector_store(chunks)
+    create_bm25_index(chunks)
+    # Create/update BM25 keyword index
     return chunks

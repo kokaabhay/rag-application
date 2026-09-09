@@ -1,8 +1,14 @@
 from typing import List
+import httpx
+import huggingface_hub
 
+huggingface_hub.set_client_factory(
+    lambda: httpx.Client(verify=False)
+)
 from langchain_core.documents import Document
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_chroma import Chroma
+from langchain_community.vectorstores.utils import filter_complex_metadata
 
 
 CHROMA_DIRECTORY = "chroma_db"
@@ -23,9 +29,12 @@ def create_vector_store(
     """
     Create a Chroma vector store from document chunks.
 
-    Existing vectors are deleted because this application
-    supports only one knowledge-base document.
+    Complex metadata produced by Unstructured is removed
+    before storing documents in Chroma.
     """
+
+    # Remove metadata values that Chroma cannot store
+    chunks = filter_complex_metadata(chunks)
 
     vector_store = Chroma(
         collection_name=COLLECTION_NAME,

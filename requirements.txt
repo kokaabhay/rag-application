@@ -1,7 +1,7 @@
 fastapi[standard]
 pydantic
 pydantic-settings
-
+langchain_huggingface
 langchain
 langchain-community
 langchain-text-splitters
