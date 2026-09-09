@@ -1,4 +1,4 @@
-from pydantic import BaseModel,Field
+from pydantic import BaseModel
 
 
 class IngestResponse(BaseModel):
@@ -6,3 +6,11 @@ class IngestResponse(BaseModel):
     document_path: str
     document_count: int
     chunk_count: int
+
+
+class ChatRequest(BaseModel):
+    query: str
+
+
+class ChatResponse(BaseModel):
+    answer: str
